@@ -40,7 +40,6 @@ namespace openssl
  * The methods here are needed to set up various openssl routines
  */
 [[gnu::unused]] static bool initialized = [] {
-    lib::OpenSSLLib::SSL_CRYPTO_malloc_init();
     lib::OpenSSLLib::SSL_ERR_load_crypto_strings();
     lib::OpenSSLLib::SSL_SSL_load_error_strings();
     lib::OpenSSLLib::SSL_OpenSSL_add_all_algorithms();
@@ -53,8 +52,6 @@ namespace lib
  *
  * Any method here simply forwards to an equivalent OpenSSL method
  */
-
-void OpenSSLLib::SSL_CRYPTO_malloc_init() noexcept { CRYPTO_malloc_init(); }
 
 void OpenSSLLib::SSL_ERR_load_crypto_strings() noexcept { ERR_load_crypto_strings(); }
 
@@ -102,11 +99,6 @@ int OpenSSLLib::SSL_EVP_PKEY_CTX_set_rsa_keygen_bits(EVP_PKEY_CTX* ctx, int mbit
 int OpenSSLLib::SSL_EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b) noexcept
 {
     return EVP_PKEY_cmp(a,b);
-}
-
-/* Reference counting magic */
-int OpenSSLLib::SSL_CRYPTO_add(int *pointer, int amount, int type) noexcept {
-    return CRYPTO_add(pointer, amount, type);
 }
 
 char* OpenSSLLib::SSL_ERR_error_string(unsigned long error, char* buf) noexcept
@@ -174,11 +166,11 @@ X509_REQ* OpenSSLLib::SSL_PEM_read_bio_X509_REQ(BIO *bp,
     return PEM_read_bio_X509_REQ(bp, x, cb, u);
 }
 
-BIO_METHOD* OpenSSLLib::SSL_BIO_s_mem() noexcept { return BIO_s_mem(); }
+const BIO_METHOD* OpenSSLLib::SSL_BIO_s_mem() noexcept { return BIO_s_mem(); }
 
 void OpenSSLLib::SSL_BIO_free_all(BIO* ptr) noexcept { BIO_free_all(ptr); }
 
-BIO* OpenSSLLib::SSL_BIO_new(BIO_METHOD* method) noexcept { return BIO_new(method); }
+BIO* OpenSSLLib::SSL_BIO_new(const BIO_METHOD* method) noexcept { return BIO_new(method); }
 
 int OpenSSLLib::SSL_BIO_gets(BIO* bio, char* buf, int size) noexcept
 {
@@ -420,7 +412,7 @@ STACK_OF(X509)* OpenSSLLib::SSL_sk_X509_new_null() noexcept
     return sk_X509_new_null();
 }
 
-int OpenSSLLib::SSL_sk_X509_push(STACK_OF(X509)* stack, const X509 *crt) noexcept
+int OpenSSLLib::SSL_sk_X509_push(STACK_OF(X509)* stack, X509 *crt) noexcept
 {
     return sk_X509_push(stack, crt);
 }
@@ -549,13 +541,13 @@ int OpenSSLLib::SSL_X509_CRL_verify(X509_CRL* a, EVP_PKEY* r) noexcept
 {
     return X509_CRL_verify(a, r);
 }
-ASN1_TIME* OpenSSLLib::SSL_X509_CRL_get_nextUpdate(const X509_CRL* x) noexcept
+const ASN1_TIME* OpenSSLLib::SSL_X509_CRL_get0_nextUpdate(const X509_CRL* x) noexcept
 {
-    return X509_CRL_get_nextUpdate(x);
+    return X509_CRL_get0_nextUpdate(x);
 }
-ASN1_TIME* OpenSSLLib::SSL_X509_CRL_get_lastUpdate(const X509_CRL* x) noexcept
+const ASN1_TIME* OpenSSLLib::SSL_X509_CRL_get0_lastUpdate(const X509_CRL* x) noexcept
 {
-    return X509_CRL_get_lastUpdate(x);
+    return X509_CRL_get0_lastUpdate(x);
 }
 X509_CRL* OpenSSLLib::SSL_PEM_read_bio_X509_CRL(BIO* bp, X509_CRL** x, pem_password_cb* cb, void* u) noexcept
 {
@@ -589,7 +581,7 @@ STACK_OF(X509_CRL)* OpenSSLLib::SSL_sk_X509_CRL_new_null() noexcept
 {
     return sk_X509_CRL_new_null();
 }
-int OpenSSLLib::SSL_sk_X509_CRL_push(STACK_OF(X509_CRL)* stack, const X509_CRL* crl) noexcept
+int OpenSSLLib::SSL_sk_X509_CRL_push(STACK_OF(X509_CRL)* stack, X509_CRL* crl) noexcept
 {
     return sk_X509_CRL_push(stack, crl);
 }

@@ -57,7 +57,7 @@ class OpenSSLLib
 public:
     static void SSL_X509_STORE_CTX_set_time(X509_STORE_CTX* ctx, unsigned long flags, time_t t) noexcept;
     static ASN1_TIME* SSL_ASN1_TIME_adj(ASN1_TIME* s, time_t t, int offset_day, long offset_sec) noexcept;
-    static int SSL_sk_X509_CRL_push(STACK_OF(X509_CRL)* stack, const X509_CRL* crl) noexcept;
+    static int SSL_sk_X509_CRL_push(STACK_OF(X509_CRL)* stack, X509_CRL* crl) noexcept;
     static STACK_OF(X509_CRL)* SSL_sk_X509_CRL_new_null() noexcept;
     static void SSL_sk_X509_CRL_free(STACK_OF(X509_CRL)* stack) noexcept;
     static void SSL_X509_STORE_CTX_set0_crls(X509_STORE_CTX* ctx, STACK_OF(X509_CRL)* crls) noexcept;
@@ -66,8 +66,8 @@ public:
     static X509_CRL* SSL_d2i_X509_CRL_bio(BIO* bp, X509_CRL** crl) noexcept;
     static int SSL_PEM_write_bio_X509_CRL(BIO* bp, X509_CRL* x) noexcept;
     static X509_CRL* SSL_PEM_read_bio_X509_CRL(BIO* bp, X509_CRL** x, pem_password_cb* cb, void* u) noexcept;
-    static ASN1_TIME* SSL_X509_CRL_get_lastUpdate(const X509_CRL* x) noexcept;
-    static ASN1_TIME* SSL_X509_CRL_get_nextUpdate(const X509_CRL* x) noexcept;
+    static const ASN1_TIME* SSL_X509_CRL_get0_lastUpdate(const X509_CRL* x) noexcept;
+    static const ASN1_TIME* SSL_X509_CRL_get0_nextUpdate(const X509_CRL* x) noexcept;
     static int SSL_X509_CRL_verify(X509_CRL* a, EVP_PKEY* r) noexcept;
     static X509_NAME* SSL_X509_CRL_get_issuer(const X509_CRL* crl) noexcept;
     static ASN1_STRING* SSL_ASN1_STRING_dup(const ASN1_STRING* str) noexcept;
@@ -103,7 +103,6 @@ public:
     static void SSL_ERR_load_crypto_strings() noexcept;
     static void SSL_SSL_load_error_strings() noexcept;
     static void SSL_OpenSSL_add_all_algorithms() noexcept;
-    static void SSL_CRYPTO_malloc_init() noexcept;
 
     /* Key Generation */
     static EVP_PKEY* SSL_EVP_PKEY_new() noexcept;
@@ -115,17 +114,14 @@ public:
     static int SSL_EVP_PKEY_CTX_set_rsa_keygen_bits(EVP_PKEY_CTX* ctx, int mbits) noexcept;
     static int SSL_EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b) noexcept;
 
-    /* Reference counting magic */
-    static int SSL_CRYPTO_add(int *pointer, int amount, int type) noexcept;
-
     /* Error handling */
     static char* SSL_ERR_error_string(unsigned long error, char* buf) noexcept;
     static unsigned long SSL_ERR_get_error() noexcept;
 
     /* BIO Stuff */
-    static BIO_METHOD* SSL_BIO_s_mem() noexcept;
+    static const BIO_METHOD* SSL_BIO_s_mem() noexcept;
     static void SSL_BIO_free_all(BIO* ptr) noexcept;
-    static BIO* SSL_BIO_new(BIO_METHOD* method) noexcept;
+    static BIO* SSL_BIO_new(const BIO_METHOD* method) noexcept;
     static int SSL_BIO_gets(BIO* bio, char* buf, int size) noexcept;
     static int SSL_BIO_puts(BIO* bio, char* buf) noexcept;
     static int SSL_PEM_write_bio_X509_REQ(BIO* bio, X509_REQ* req) noexcept;
@@ -234,7 +230,7 @@ public:
 
     /* stack of X509 */
     static STACK_OF(X509)* SSL_sk_X509_new_null() noexcept;
-    static int SSL_sk_X509_push(STACK_OF(X509)* stack, const X509 *crt) noexcept;
+    static int SSL_sk_X509_push(STACK_OF(X509)* stack, X509 *crt) noexcept;
     static void SSL_sk_X509_free(STACK_OF(X509)* stack) noexcept;
 
     /* EVP_MD */

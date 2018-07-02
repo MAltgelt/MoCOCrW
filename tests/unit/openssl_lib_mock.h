@@ -46,8 +46,8 @@ public:
     virtual X509_CRL* SSL_d2i_X509_CRL_bio(BIO* bp, X509_CRL** crl) = 0;
     virtual int SSL_PEM_write_bio_X509_CRL(BIO* bp, X509_CRL* x) = 0;
     virtual X509_CRL* SSL_PEM_read_bio_X509_CRL(BIO* bp, X509_CRL** x, pem_password_cb* cb, void* u) = 0;
-    virtual ASN1_TIME* SSL_X509_CRL_get_lastUpdate(const X509_CRL* x) = 0;
-    virtual ASN1_TIME* SSL_X509_CRL_get_nextUpdate(const X509_CRL* x) = 0;
+    virtual const ASN1_TIME* SSL_X509_CRL_get0_lastUpdate(const X509_CRL* x) = 0;
+    virtual const ASN1_TIME* SSL_X509_CRL_get0_nextUpdate(const X509_CRL* x) = 0;
     virtual int SSL_X509_CRL_verify(X509_CRL* a, EVP_PKEY* r) = 0;
     virtual X509_NAME* SSL_X509_CRL_get_issuer(const X509_CRL* crl) = 0;
     virtual ASN1_STRING* SSL_ASN1_STRING_dup(const ASN1_STRING* str) = 0;
@@ -97,9 +97,6 @@ public:
     virtual int SSL_EVP_PKEY_CTX_set_rsa_keygen_bits(EVP_PKEY_CTX* ctx, int mbits) = 0;
 
     virtual int SSL_EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b) = 0;
-
-    /* Reference counting magic */
-    virtual int SSL_CRYPTO_add(int *pointer, int amount, int type) = 0;
 
     /* Error handling */
     virtual char* SSL_ERR_error_string(unsigned long error, char* buf) = 0;
@@ -157,9 +154,9 @@ public:
     virtual ASN1_TIME *SSL_ASN1_TIME_set(ASN1_TIME *s, time_t t) = 0;
 
     /* BIO Stuff */
-    virtual BIO_METHOD* SSL_BIO_s_mem() = 0;
+    virtual const BIO_METHOD* SSL_BIO_s_mem() = 0;
     virtual void SSL_BIO_free_all(BIO* ptr) = 0;
-    virtual BIO* SSL_BIO_new(BIO_METHOD* method) = 0;
+    virtual BIO* SSL_BIO_new(const BIO_METHOD* method) = 0;
     virtual int SSL_BIO_gets(BIO* bio, char* bug, int size) = 0;
     virtual int SSL_BIO_puts(BIO* bio, char* buf) = 0;
     virtual int SSL_PEM_write_bio_X509_REQ(BIO* bio, X509_REQ* req) = 0;
@@ -216,7 +213,7 @@ public:
 
     /* stack of X509 */
     virtual STACK_OF(X509)* SSL_sk_X509_new_null() = 0;
-    virtual int SSL_sk_X509_push(STACK_OF(X509)* stack, const X509 *crt) = 0;
+    virtual int SSL_sk_X509_push(STACK_OF(X509)* stack, X509 *crt) = 0;
     virtual void SSL_sk_X509_free(STACK_OF(X509)* stack) = 0;
 };
 
@@ -241,8 +238,8 @@ public:
     MOCK_METHOD2(SSL_PEM_write_bio_X509_CRL, int(BIO*, X509_CRL*));
     MOCK_METHOD4(SSL_PEM_read_bio_X509_CRL, X509_CRL*(BIO*, X509_CRL**, pem_password_cb*, void*));
     MOCK_METHOD1(SSL_X509_CRL_get_REVOKED, STACK_OF(X509_REVOKED)*(X509_CRL*));
-    MOCK_METHOD1(SSL_X509_CRL_get_lastUpdate, ASN1_TIME*(const X509_CRL*));
-    MOCK_METHOD1(SSL_X509_CRL_get_nextUpdate, ASN1_TIME*(const X509_CRL*));
+    MOCK_METHOD1(SSL_X509_CRL_get0_lastUpdate, const ASN1_TIME*(const X509_CRL*));
+    MOCK_METHOD1(SSL_X509_CRL_get0_nextUpdate, const ASN1_TIME*(const X509_CRL*));
     MOCK_METHOD2(SSL_X509_CRL_verify, int(X509_CRL*, EVP_PKEY*));
     MOCK_METHOD1(SSL_X509_CRL_get_issuer, X509_NAME*(const X509_CRL*));
     MOCK_METHOD1(SSL_ASN1_STRING_dup, ASN1_STRING*(const ASN1_STRING*));
@@ -295,8 +292,6 @@ public:
 
     MOCK_METHOD2(SSL_EVP_PKEY_cmp, int(const EVP_PKEY*, const EVP_PKEY *));
 
-    MOCK_METHOD3(SSL_CRYPTO_add, int(int*, int, int));
-
     MOCK_METHOD0(SSL_ERR_get_error, unsigned long());
     MOCK_METHOD2(SSL_ERR_error_string, char*(unsigned long, char*));
 
@@ -314,9 +309,9 @@ public:
     MOCK_METHOD2(SSL_X509_REQ_set_pubkey, int(X509_REQ* x, EVP_PKEY* pkey));
     MOCK_METHOD2(SSL_X509_REQ_set_version, int(X509_REQ*, unsigned long));
 
-    MOCK_METHOD0(SSL_BIO_s_mem, BIO_METHOD*());
+    MOCK_METHOD0(SSL_BIO_s_mem, const BIO_METHOD*());
     MOCK_METHOD1(SSL_BIO_free_all, void(BIO*));
-    MOCK_METHOD1(SSL_BIO_new, BIO*(BIO_METHOD*));
+    MOCK_METHOD1(SSL_BIO_new, BIO*(const BIO_METHOD*));
     MOCK_METHOD2(SSL_PEM_write_bio_X509_REQ, int(BIO*, X509_REQ*));
     MOCK_METHOD3(SSL_BIO_gets, int(BIO*, char*, int));
     MOCK_METHOD2(SSL_X509_REQ_sign_ctx, int(X509_REQ*, EVP_MD_CTX*));
@@ -378,7 +373,7 @@ public:
     MOCK_METHOD1(SSL_X509_STORE_CTX_get_error, int(X509_STORE_CTX*));
 
     MOCK_METHOD0(SSL_sk_X509_new_null, STACK_OF(X509)*());
-    MOCK_METHOD2(SSL_sk_X509_push, int(STACK_OF(X509)*, const X509*));
+    MOCK_METHOD2(SSL_sk_X509_push, int(STACK_OF(X509)*, X509*));
     MOCK_METHOD1(SSL_sk_X509_free, void(STACK_OF(X509)*));
 
     MOCK_METHOD3(SSL_X509_NAME_get_index_by_NID, int(X509_NAME*, int, int));

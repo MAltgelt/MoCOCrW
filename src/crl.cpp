@@ -38,12 +38,12 @@ DistinguishedName CertificateRevocationList::getIssuerName() const
 
 Asn1Time CertificateRevocationList::getLastUpdateAsn1() const
 {
-    return Asn1Time(_X509_CRL_get_lastUpdate(internal()));
+    return Asn1Time(_X509_CRL_get0_lastUpdate(internal()));
 }
 
 Asn1Time CertificateRevocationList::getNextUpdateAsn1() const
 {
-    return Asn1Time(_X509_CRL_get_nextUpdate(internal()));
+    return Asn1Time(_X509_CRL_get0_nextUpdate(internal()));
 }
 
 void CertificateRevocationList::verify(const X509Certificate &signer) const

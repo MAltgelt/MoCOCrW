@@ -33,6 +33,13 @@ using ::testing::Return;
 using ::testing::_;
 using ::testing::SetArgPointee;
 using ::testing::AnyNumber;
+using ::testing::DoAll;
+
+/// These structs are defined internally in OpenSSL 1.1, so we provide definitions instead
+struct evp_pkey_st {};
+struct X509_name_st {};
+struct bio_st {};
+struct evp_cipher_st {};
 
 /**
  * Test the openssl wrapper.
@@ -47,6 +54,7 @@ class OpenSSLWrapperTest : public ::testing::Test
 {
 public:
     void SetUp() override;
+    void TearDown() override;
 
 protected:
     std::string _defaultErrorMessage{"bla bla bla"};
@@ -75,6 +83,11 @@ void OpenSSLWrapperTest::SetUp()
     ON_CALL(_mock(), SSL_ERR_error_string(_, nullptr))
             .WillByDefault(Return(const_cast<char *>(_defaultErrorMessage.c_str())));
     // TODO: Get rid of the uninteresting calls by default here somehow...
+}
+
+void OpenSSLWrapperTest::TearDown()
+{
+    OpenSSLLibMockManager::resetMock();
 }
 
 /*
